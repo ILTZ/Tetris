@@ -11,6 +11,7 @@ APlayerCam::APlayerCam()
 
 	MyRootComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("RootModel"));
 	RootComponent = MyRootComponent;
+	MyRootComponent->SetWorldLocation(FVector(0.0f, -1000.0f, 0.0f));
 
 	CameraSpring = CreateDefaultSubobject<USpringArmComponent>(TEXT("Spring"));
 	CameraSpring->SetRelativeLocation(FVector(0, 0, 0));
@@ -20,7 +21,7 @@ APlayerCam::APlayerCam()
 	Camera->AttachTo(CameraSpring, USpringArmComponent::SocketName);
 
 	CameraSpring->SetRelativeRotation(FRotator(-90, -90, 180));
-	CameraSpring->TargetArmLength = 1500.0f;
+	CameraSpring->TargetArmLength = 2500.0f;
 	CameraSpring->bDoCollisionTest = false;
 
 	
@@ -31,8 +32,8 @@ void APlayerCam::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	FillArrays();
-	SetOnBoard();
+	GM = MENU;
+	
 }
 
 // Called every frame
@@ -40,14 +41,9 @@ void APlayerCam::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (Spawned)
+	if (Spawned && (GM == START_GAME))
 	{
-		int n = 3;
-		for (int i = 4; i < CurrentFigureA.Num(); ++i)
-		{
-			CurrentFigureA[i].x = FiguresArray[n][i] % 2;
-			CurrentFigureA[i].y = FiguresArray[n][i] / 2;
-		}
+
 		for (int i = 0; i < CurrentFigure.Num(); ++i)
 		{
 			CurrentFigure[i]->SetActorLocation(FVector(CurrentFigureA[i].x * 100, CurrentFigureA[i].y * 100, 0.0f));
@@ -59,21 +55,46 @@ void APlayerCam::Tick(float DeltaTime)
 			MoveDown();
 			bufferTime = 0;
 			static int count = 0;
-			for (auto pont : CurrentFigureA)
-			{
-				/*GEngine->AddOnScreenDebugMessage(count, .5f, FColor::Red, TEXT("Point x is:") + FString::FromInt(pont.x) + " Point y is:" + FString::FromInt(pont.y));
-				count += 1;*/
-				GEngine->AddOnScreenDebugMessage(0, 5.f, FColor::Red, FString::FromInt(LogicArray.Num()));
-				GEngine->AddOnScreenDebugMessage(1, 5.f, FColor::Red, FString::FromInt(LogicArray[0].Num()));
-			}
 		}
 
-		
+		FString Count = "";
+		FString Temp = "";
+		for (int i = 0; i < FieldHight; ++i)
+		{
+			Temp = "";
+			for (int j = 0; j < FieldLength; ++j)
+			{
+				if (LogicPtrArray[j][i])
+				{
+					Count += "1 ";
+				}
+				else
+				{
+					Count += "0 ";
+				}
 
+				if (LogicArray[j][i])
+				{
+					Temp += "1 ";
+				}
+				else
+				{
+					Temp += "0 ";
+				}
+
+
+			}
+			Count += ("      " + Temp);
+			Count += '\n';
+		}
+		GEngine->AddOnScreenDebugMessage(0, 5.f, FColor::Blue, Count);
+		GEngine->AddOnScreenDebugMessage(20, 5.f, FColor::Blue, TEXT("///////////////////////////////"));
 
 
 	}
 
+
+	
 
 }
 
@@ -85,6 +106,9 @@ void APlayerCam::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 	PlayerInputComponent->BindAction("LeftDir", IE_Pressed, this, &APlayerCam::LeftMove);
 	PlayerInputComponent->BindAction("RightDir", IE_Pressed, this, &APlayerCam::RightMove);
 	PlayerInputComponent->BindAction("Rotate", IE_Pressed, this, &APlayerCam::Rotate);
+
+	PlayerInputComponent->BindAction("DownDir", IE_Pressed, this, &APlayerCam::DownDirection);
+	PlayerInputComponent->BindAction("DownDir", IE_Released, this, &APlayerCam::ChangeTime);
 }
 
 ///////////////////////////////////////////////////////////////
@@ -93,48 +117,75 @@ void APlayerCam::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 void APlayerCam::FillArrays()
 {
 	TArray<int> Figures;
-	FiguresArray.Add(Figures = { 1,3,5,7 });
-	FiguresArray.Add(Figures = { 2,4,5,7 });
-	FiguresArray.Add(Figures = { 3,5,4,6 });
-	FiguresArray.Add(Figures = { 3,5,4,7 });
-	FiguresArray.Add(Figures = { 2,3,5,7 });
-	FiguresArray.Add(Figures = { 3,5,7,6 });
-	FiguresArray.Add(Figures = { 2,3,4,5 });
+	/*FiguresArray.Add(Figures = { 1,3,5,7 }); // Палка вертикальная |
+	FiguresArray.Add(Figures = { 2,4,5,7 }); // Зигзаг '-.
+	FiguresArray.Add(Figures = { 3,5,4,6 }); // Зигзаг .-'
+	FiguresArray.Add(Figures = { 3,5,4,7 }); // Пиравида -|
+	FiguresArray.Add(Figures = { 2,3,5,7 }); // Загнутая палка `|
+	FiguresArray.Add(Figures = { 3,5,7,6 }); // Загнутая палка _|
+	FiguresArray.Add(Figures = { 2,3,4,5 }); // Кубек */
 
-	for (int i = 0; i < 10; ++i)
+	FiguresArray.Add(Figures = { 5 ,15,25,35 }); // Палка вертикальная |
+	FiguresArray.Add(Figures = { 14,24,25,35 }); // Зигзаг '-.
+	FiguresArray.Add(Figures = { 15,25,24,34 }); // Зигзаг .-'
+	FiguresArray.Add(Figures = { 15,25,24,35 }); // Пиравида -|
+	FiguresArray.Add(Figures = { 14,15,25,35 }); // Загнутая палка `|
+	FiguresArray.Add(Figures = { 15,25,35,34 }); // Загнутая палка _|*/
+	FiguresArray.Add(Figures = { 14,15,24,25 }); // Квадрат 
+
+	for (int i = 0; i < FieldLength; ++i)
 	{
 		TArray<int> Hight;
-		Hight.Init(0, 20);
+		Hight.Init(0, FieldHight);
 		LogicArray.Add(Hight);
+
+		TArray<ACub*> Cubs;
+		Cubs.Init(nullptr, FieldHight);
+		LogicPtrArray.Add(Cubs);
 	}
-	for (int i = 0; i < 4; ++i)
-	{
-		CurrentPoint point;
-		CurrentFigureB.Add(point);
-	}
+	
+	CurrentPoint point;
+	CurrentFigureB.Init(point, 4);
+	CurrentFigureA.Init(point, 4);
+
+	//CurrentNumberFigure = FMath::RandRange(0, 6);
+	CurrentNumberFigure = 0;
 }
 
 void APlayerCam::SetOnBoard()
 {
-	int n = 3;
+	
+	Spawned = false;
+	CurrentNumberFigure = FMath::RandRange(0, 6);
+	int n = CurrentNumberFigure;
+	
+
 	for (int i = 0; i < 4; ++i)
 	{
-		CurrentPoint point;
-		CurrentFigureA.Add(point);
-		CurrentFigureA[i].x = FiguresArray[n][i] % 2;
-		CurrentFigureA[i].y = FiguresArray[n][i] / 2;
+		CurrentFigureA[i].x = FiguresArray[n][i] % 10;
+		CurrentFigureA[i].y = FiguresArray[n][i] / 10;
 	}
+	CurrentFigure.Reset(0);
 	for (int i = 0; i < 4; ++i)
 	{
 		ACub* Cubus = GetWorld()->SpawnActor<ACub>();
-
+		
 		if (Cubus)
 		{
-			Cubus->SetActorLocation(FVector(CurrentFigureA[i].x * 100, CurrentFigureA[i].y * 100, 0.0f));
+			Cubus->SetActorLocation(FVector(CurrentFigureA[i].x * 100, CurrentFigureA[i].y * 100, 400.0f));
+			CurrentFigureA[i].FigureNum = i;
 			CurrentFigure.Add(Cubus);
 		}
 	}
 	Spawned = true;
+}
+void APlayerCam::SetOnField()
+{
+	for (int i = 0; i < CurrentFigureB.Num(); ++i)
+	{
+		LogicArray[CurrentFigureB[i].x][CurrentFigureB[i].y] = 1;
+		LogicPtrArray[CurrentFigureB[i].x][CurrentFigureB[i].y] = CurrentFigure[CurrentFigureB[i].FigureNum];
+	}
 }
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
@@ -193,7 +244,29 @@ void APlayerCam::MoveDown()
 	if (!FieldCheck())
 	{
 		ReturnCoords();
+		SetOnField();
+
+		if (CheckEndGame())
+		{
+			GM = END_GAME;
+			return;
+		}
+
+
+
+		CheckLine();
+		RefreshPtrArray();
+
+		SetOnBoard();
 	}
+}
+void APlayerCam::DownDirection()
+{
+	Time = 0.1f;
+}
+void APlayerCam::ChangeTime()
+{
+	Time = 1.0f;
 }
 //////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////
@@ -221,6 +294,7 @@ void APlayerCam::SyncArrays()
 	{
 		CurrentFigureB[i].x = CurrentFigureA[i].x;
 		CurrentFigureB[i].y = CurrentFigureA[i].y;
+		CurrentFigureB[i].FigureNum = CurrentFigureA[i].FigureNum;
 	}
 }
 void APlayerCam::ReturnCoords()
@@ -229,5 +303,95 @@ void APlayerCam::ReturnCoords()
 	{
 		CurrentFigureA[i].x = CurrentFigureB[i].x;
 		CurrentFigureA[i].y = CurrentFigureB[i].y;
+		CurrentFigureA[i].FigureNum = CurrentFigureB[i].FigureNum;
 	}
+}
+void APlayerCam::CheckLine()
+{
+	int k = FieldHight - 1;
+	for (int i = FieldHight - 1; i > 0; --i)
+	{
+		int count = 0;
+		for (int j = 0; j < FieldLength; ++j)
+		{
+			if (LogicArray[j][i] != 0)
+			{
+				++count;
+			}
+			LogicArray[j][k] = LogicArray[j][i];
+
+		}
+		if (count < FieldLength && (k != 0))
+		{
+			--k;
+		}
+	}
+	
+	
+}
+void APlayerCam::RefreshPtrArray()
+{
+	
+	for (int i = FieldHight - 1; i > 0; --i)
+	{
+		int count = 0;
+		for (int j = 0; j < FieldLength; ++j)
+		{
+			if (LogicPtrArray[j][i])
+			{
+				++count;
+			}
+		}
+
+		if (!(count < FieldLength))
+		{
+			for (int c = 0; c < FieldLength; ++c)
+			{
+				LogicPtrArray[c][i]->Destroy();
+				LogicPtrArray[c][i] = nullptr;
+			}
+
+			for (int h = i - 1; h > 0; --h)
+			{
+				for (int y = 0; y < FieldLength; ++y)
+				{
+					if (LogicPtrArray[y][h] != nullptr)
+					{
+						FVector Location = LogicPtrArray[y][h]->GetActorLocation();
+						Location.Y += 100.0f;
+						LogicPtrArray[y][h]->SetActorLocation(Location);
+						LogicPtrArray[y][h + 1] = LogicPtrArray[y][h];
+						LogicPtrArray[y][h] = nullptr;
+					}
+				}
+			}
+			//Вдруг здесь же образовалась новая линия, которую нужно удалить
+			++i;
+		}
+	}
+}
+bool APlayerCam::CheckEndGame()
+{
+	for (int i = 0; i < FieldLength; ++i)
+	{
+		if (LogicArray[i][1])
+		{
+			return true;
+		}
+	}
+	return false;
+}
+/////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////
+void APlayerCam::BeginGame()
+{
+	GM = START_GAME;
+	FillArrays();
+	SetOnBoard();
+
+}
+void APlayerCam::PauseGame()
+{
+	GM = PAUSE;
 }
