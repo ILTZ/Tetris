@@ -146,6 +146,9 @@ public:
 	void BeginGame();
 
 	UFUNCTION(BlueprintCallable)
+	void RestartGame();
+
+	UFUNCTION(BlueprintCallable)
 	void PauseGame();
 
 

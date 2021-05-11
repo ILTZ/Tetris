@@ -24,7 +24,7 @@ APlayerCam::APlayerCam()
 	CameraSpring->TargetArmLength = 2500.0f;
 	CameraSpring->bDoCollisionTest = false;
 
-	
+	GM = MENU;
 }
 
 // Called when the game starts or when spawned
@@ -57,7 +57,7 @@ void APlayerCam::Tick(float DeltaTime)
 			static int count = 0;
 		}
 
-		FString Count = "";
+		/*FString Count = "";
 		FString Temp = "";
 		for (int i = 0; i < FieldHight; ++i)
 		{
@@ -88,7 +88,7 @@ void APlayerCam::Tick(float DeltaTime)
 			Count += '\n';
 		}
 		GEngine->AddOnScreenDebugMessage(0, 5.f, FColor::Blue, Count);
-		GEngine->AddOnScreenDebugMessage(20, 5.f, FColor::Blue, TEXT("///////////////////////////////"));
+		GEngine->AddOnScreenDebugMessage(20, 5.f, FColor::Blue, TEXT("///////////////////////////////"));*/
 
 
 	}
@@ -109,6 +109,8 @@ void APlayerCam::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 
 	PlayerInputComponent->BindAction("DownDir", IE_Pressed, this, &APlayerCam::DownDirection);
 	PlayerInputComponent->BindAction("DownDir", IE_Released, this, &APlayerCam::ChangeTime);
+
+	PlayerInputComponent->BindAction("Pause", IE_Pressed, this, &APlayerCam::PauseGame);
 }
 
 ///////////////////////////////////////////////////////////////
@@ -186,6 +188,8 @@ void APlayerCam::SetOnField()
 		LogicArray[CurrentFigureB[i].x][CurrentFigureB[i].y] = 1;
 		LogicPtrArray[CurrentFigureB[i].x][CurrentFigureB[i].y] = CurrentFigure[CurrentFigureB[i].FigureNum];
 	}
+
+	++UserScore;
 }
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
@@ -251,8 +255,6 @@ void APlayerCam::MoveDown()
 			GM = END_GAME;
 			return;
 		}
-
-
 
 		CheckLine();
 		RefreshPtrArray();
@@ -367,6 +369,7 @@ void APlayerCam::RefreshPtrArray()
 			}
 			//Вдруг здесь же образовалась новая линия, которую нужно удалить
 			++i;
+			UserScore += FieldLength;
 		}
 	}
 }
@@ -376,6 +379,13 @@ bool APlayerCam::CheckEndGame()
 	{
 		if (LogicArray[i][1])
 		{
+			//Чтобы указатели в догическом не затирались 
+			for (auto Cub : CurrentFigure)
+			{
+				Cub->Destroy();
+			}
+			--UserScore;
+
 			return true;
 		}
 	}
@@ -386,12 +396,43 @@ bool APlayerCam::CheckEndGame()
 /////////////////////////////////////////////////////////////////////
 void APlayerCam::BeginGame()
 {
-	GM = START_GAME;
+	
 	FillArrays();
 	SetOnBoard();
-
+	GM = START_GAME;
 }
 void APlayerCam::PauseGame()
 {
-	GM = PAUSE;
+	if (GM == START_GAME)
+	{
+		GM = PAUSE;
+	}
+	else if (GM == PAUSE)
+	{
+		GM = START_GAME;
+	}
+}
+void APlayerCam::RestartGame()
+{
+	for (int i = 0; i < FieldHight; ++i)
+	{
+		for (int j = 0; j < FieldLength; ++j)
+		{
+			if (LogicArray[j][i])
+			{
+				LogicArray[j][i] = 0;
+			}
+			if (LogicPtrArray[j][i])
+			{
+				LogicPtrArray[j][i]->Destroy();
+				LogicPtrArray[j][i] = nullptr;
+			}
+		}
+	}
+
+
+
+	FillArrays();
+	SetOnBoard();
+	GM = START_GAME;
 }
