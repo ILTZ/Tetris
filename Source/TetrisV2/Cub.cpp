@@ -35,3 +35,11 @@ void ACub::Tick(float DeltaTime)
 
 }
 
+void ACub::SetColor(UMaterialInstance* Color)
+{
+	if (CoreMesh)
+	{
+		CoreMesh->SetMaterial(0, Color);
+	}
+}
+

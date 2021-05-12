@@ -1,6 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
+#include "Engine/StaticMeshActor.h"
 #include "PlayerCam.h"
 
 // Sets default values
@@ -11,7 +11,7 @@ APlayerCam::APlayerCam()
 
 	MyRootComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("RootModel"));
 	RootComponent = MyRootComponent;
-	MyRootComponent->SetWorldLocation(FVector(0.0f, -1000.0f, 0.0f));
+	MyRootComponent->SetWorldLocation(FVector(-500.0f, -1000.0f, 0.0f));
 
 	CameraSpring = CreateDefaultSubobject<USpringArmComponent>(TEXT("Spring"));
 	CameraSpring->SetRelativeLocation(FVector(0, 0, 0));
@@ -23,6 +23,23 @@ APlayerCam::APlayerCam()
 	CameraSpring->SetRelativeRotation(FRotator(-90, -90, 180));
 	CameraSpring->TargetArmLength = 2500.0f;
 	CameraSpring->bDoCollisionTest = false;
+
+
+	UMaterialInstance* BlueColor = ConstructorHelpers::FObjectFinderOptional<UMaterialInstance>
+		(TEXT("MaterialInstanceConstant'/Game/Materials/Instances/M_Basic_Floor_Inst.M_Basic_Floor_Inst'")).Get();
+	UMaterialInstance* CuperColor = ConstructorHelpers::FObjectFinderOptional<UMaterialInstance>
+		(TEXT("MaterialInstanceConstant'/Game/Materials/Instances/M_Metal_Copper_Inst.M_Metal_Copper_Inst'")).Get();
+	UMaterialInstance* GoldColor = ConstructorHelpers::FObjectFinderOptional<UMaterialInstance>
+		(TEXT("MaterialInstanceConstant'/Game/Materials/Instances/M_Metal_Gold_Inst.M_Metal_Gold_Inst'")).Get();
+	UMaterialInstance* WoodColor = ConstructorHelpers::FObjectFinderOptional<UMaterialInstance>
+		(TEXT("MaterialInstanceConstant'/Game/Materials/Instances/M_Wood_Floor_Walnut_Polished_Inst.M_Wood_Floor_Walnut_Polished_Inst'")).Get();
+
+	ColorsForBlocks.Add(BlueColor);
+	ColorsForBlocks.Add(CuperColor);
+	ColorsForBlocks.Add(GoldColor);
+	ColorsForBlocks.Add(WoodColor);
+
+
 
 	GM = MENU;
 }
@@ -98,6 +115,32 @@ void APlayerCam::Tick(float DeltaTime)
 
 }
 
+void APlayerCam::DrowGameField()
+{
+	for (int i = 0; i < FieldHight; ++i)
+	{
+		for (int j = 0; j < FieldLength; ++j)
+		{
+			ACub* Cubusik = GetWorld()->SpawnActor<ACub>();
+			if (Cubusik)
+			{
+				
+
+				
+				FVector PointLoc = FVector(0 + j * 100.0f, 0 + i * 100.0f, -200.0f);
+				Cubusik->SetActorLocation(PointLoc);
+
+			}
+		}
+	}
+
+	
+		
+	
+}
+
+
+
 // Called to bind functionality to input
 void APlayerCam::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
@@ -150,6 +193,8 @@ void APlayerCam::FillArrays()
 	CurrentFigureB.Init(point, 4);
 	CurrentFigureA.Init(point, 4);
 
+
+
 	//CurrentNumberFigure = FMath::RandRange(0, 6);
 	CurrentNumberFigure = 0;
 }
@@ -177,6 +222,7 @@ void APlayerCam::SetOnBoard()
 			Cubus->SetActorLocation(FVector(CurrentFigureA[i].x * 100, CurrentFigureA[i].y * 100, 400.0f));
 			CurrentFigureA[i].FigureNum = i;
 			CurrentFigure.Add(Cubus);
+			AllFigures.Add(Cubus);
 		}
 	}
 	Spawned = true;
@@ -187,6 +233,8 @@ void APlayerCam::SetOnField()
 	{
 		LogicArray[CurrentFigureB[i].x][CurrentFigureB[i].y] = 1;
 		LogicPtrArray[CurrentFigureB[i].x][CurrentFigureB[i].y] = CurrentFigure[CurrentFigureB[i].FigureNum];
+
+
 	}
 
 	++UserScore;
@@ -380,10 +428,7 @@ bool APlayerCam::CheckEndGame()
 		if (LogicArray[i][1])
 		{
 			//„тобы указатели в догическом не затирались 
-			for (auto Cub : CurrentFigure)
-			{
-				Cub->Destroy();
-			}
+		
 			--UserScore;
 
 			return true;
@@ -399,6 +444,7 @@ void APlayerCam::BeginGame()
 	
 	FillArrays();
 	SetOnBoard();
+	DrowGameField();
 	GM = START_GAME;
 }
 void APlayerCam::PauseGame()
@@ -430,7 +476,15 @@ void APlayerCam::RestartGame()
 		}
 	}
 
+	for (int i = 0; i < AllFigures.Num(); ++i)
+	{
+		AllFigures[i]->Destroy();
+		AllFigures[i] = nullptr;
+	}
+	AllFigures.Reset(0);
 
+
+	UserScore = 0;
 
 	FillArrays();
 	SetOnBoard();

@@ -72,9 +72,10 @@ private:
 	TArray<CurrentPoint> CurrentFigureA;
 	TArray<CurrentPoint> CurrentFigureB;
 
-
-	
-	
+	//Отрисовка игрового поля;
+	void DrowGameField();
+	//Все цвета
+	TArray<UMaterialInstance*> ColorsForBlocks;
 
 	//Используются TArray вложенные в TArray, чтобы сохранить кроссплатформенность
 	void FillArrays();
@@ -109,6 +110,10 @@ private:
 
 	//Хранит текущую фигуру
 	TArray<ACub*> CurrentFigure;
+
+	//Хранит все кубы, что были на поле (чтобы корректно уничтожить всё при рестарте)
+	TArray<ACub*> AllFigures;
+
 	//Синхронно с логическим массивом хранит указатели на кубы(для уничтожения
 	//в случае построения линии блоков
 	TArray<TArray<ACub*>> LogicPtrArray;

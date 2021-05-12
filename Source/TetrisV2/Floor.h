@@ -3,28 +3,21 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
 
 #include <Components/StaticMeshComponent.h>
 #include <Components/BoxComponent.h>
 
-#include "Cub.generated.h"
+#include "GameFramework/Actor.h"
+#include "Floor.generated.h"
 
 UCLASS()
-class TETRISV2_API ACub : public AActor
+class TETRISV2_API AFloor : public AActor
 {
 	GENERATED_BODY()
-
-		
-
-
 	
 public:	
 	// Sets default values for this actor's properties
-	ACub();
-
-	void SetColor(UMaterialInstance* Color);
-
+	AFloor();
 
 protected:
 	// Called when the game starts or when spawned
@@ -37,7 +30,5 @@ public:
 private:
 	UStaticMeshComponent* CoreMesh;
 	UMaterialInstance* CoreColor;
-
-
 
 };
