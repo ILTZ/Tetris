@@ -26,18 +26,22 @@ APlayerCam::APlayerCam()
 
 
 	UMaterialInstance* BlueColor = ConstructorHelpers::FObjectFinderOptional<UMaterialInstance>
-		(TEXT("MaterialInstanceConstant'/Game/Materials/Instances/M_Basic_Floor_Inst.M_Basic_Floor_Inst'")).Get();
-	UMaterialInstance* CuperColor = ConstructorHelpers::FObjectFinderOptional<UMaterialInstance>
-		(TEXT("MaterialInstanceConstant'/Game/Materials/Instances/M_Metal_Copper_Inst.M_Metal_Copper_Inst'")).Get();
-	UMaterialInstance* GoldColor = ConstructorHelpers::FObjectFinderOptional<UMaterialInstance>
-		(TEXT("MaterialInstanceConstant'/Game/Materials/Instances/M_Metal_Gold_Inst.M_Metal_Gold_Inst'")).Get();
-	UMaterialInstance* WoodColor = ConstructorHelpers::FObjectFinderOptional<UMaterialInstance>
-		(TEXT("MaterialInstanceConstant'/Game/Materials/Instances/M_Wood_Floor_Walnut_Polished_Inst.M_Wood_Floor_Walnut_Polished_Inst'")).Get();
+		(TEXT("MaterialInstanceConstant'/Game/Materials/Instances/BlueColor_Inst.BlueColor_Inst'")).Get();
+	UMaterialInstance* RedColor = ConstructorHelpers::FObjectFinderOptional<UMaterialInstance>
+		(TEXT("MaterialInstanceConstant'/Game/Materials/Instances/RedColor_Inst.RedColor_Inst'")).Get();
+	UMaterialInstance* GreenColor = ConstructorHelpers::FObjectFinderOptional<UMaterialInstance>
+		(TEXT("MaterialInstanceConstant'/Game/Materials/Instances/GreenColor_Inst.GreenColor_Inst'")).Get();
+	UMaterialInstance* OrangeColor = ConstructorHelpers::FObjectFinderOptional<UMaterialInstance>
+		(TEXT("MaterialInstanceConstant'/Game/Materials/Instances/OrangeColor_Inst.OrangeColor_Inst'")).Get();
+
+
 
 	ColorsForBlocks.Add(BlueColor);
-	ColorsForBlocks.Add(CuperColor);
-	ColorsForBlocks.Add(GoldColor);
-	ColorsForBlocks.Add(WoodColor);
+	ColorsForBlocks.Add(RedColor);
+	ColorsForBlocks.Add(GreenColor);
+	ColorsForBlocks.Add(OrangeColor);
+
+
 
 
 
@@ -115,29 +119,7 @@ void APlayerCam::Tick(float DeltaTime)
 
 }
 
-void APlayerCam::DrowGameField()
-{
-	for (int i = 0; i < FieldHight; ++i)
-	{
-		for (int j = 0; j < FieldLength; ++j)
-		{
-			ACub* Cubusik = GetWorld()->SpawnActor<ACub>();
-			if (Cubusik)
-			{
-				
 
-				
-				FVector PointLoc = FVector(0 + j * 100.0f, 0 + i * 100.0f, -200.0f);
-				Cubusik->SetActorLocation(PointLoc);
-
-			}
-		}
-	}
-
-	
-		
-	
-}
 
 
 
@@ -173,9 +155,9 @@ void APlayerCam::FillArrays()
 	FiguresArray.Add(Figures = { 5 ,15,25,35 }); // Палка вертикальная |
 	FiguresArray.Add(Figures = { 14,24,25,35 }); // Зигзаг '-.
 	FiguresArray.Add(Figures = { 15,25,24,34 }); // Зигзаг .-'
-	FiguresArray.Add(Figures = { 15,25,24,35 }); // Пиравида -|
-	FiguresArray.Add(Figures = { 14,15,25,35 }); // Загнутая палка `|
-	FiguresArray.Add(Figures = { 15,25,35,34 }); // Загнутая палка _|*/
+	FiguresArray.Add(Figures = { 15,25,24,35 }); // Пирамида -|
+	FiguresArray.Add(Figures = { 24,25,35,45 }); // Загнутая палка `|
+	FiguresArray.Add(Figures = { 25,35,45,44 }); // Загнутая палка _|*/
 	FiguresArray.Add(Figures = { 14,15,24,25 }); // Квадрат 
 
 	for (int i = 0; i < FieldLength; ++i)
@@ -205,6 +187,7 @@ void APlayerCam::SetOnBoard()
 	Spawned = false;
 	CurrentNumberFigure = FMath::RandRange(0, 6);
 	int n = CurrentNumberFigure;
+	int RandColor = FMath::RandRange(0, ColorsForBlocks.Num() - 1);
 	
 
 	for (int i = 0; i < 4; ++i)
@@ -219,6 +202,7 @@ void APlayerCam::SetOnBoard()
 		
 		if (Cubus)
 		{
+			Cubus->SetColor(ColorsForBlocks[RandColor]);
 			Cubus->SetActorLocation(FVector(CurrentFigureA[i].x * 100, CurrentFigureA[i].y * 100, 400.0f));
 			CurrentFigureA[i].FigureNum = i;
 			CurrentFigure.Add(Cubus);
@@ -444,7 +428,7 @@ void APlayerCam::BeginGame()
 	
 	FillArrays();
 	SetOnBoard();
-	DrowGameField();
+
 	GM = START_GAME;
 }
 void APlayerCam::PauseGame()
