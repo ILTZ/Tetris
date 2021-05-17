@@ -188,13 +188,20 @@ void APlayerCam::SetOnBoard()
 	CurrentNumberFigure = FMath::RandRange(0, 6);
 	int n = CurrentNumberFigure;
 	int RandColor = FMath::RandRange(0, ColorsForBlocks.Num() - 1);
-	
 
 	for (int i = 0; i < 4; ++i)
 	{
 		CurrentFigureA[i].x = FiguresArray[n][i] % 10;
 		CurrentFigureA[i].y = FiguresArray[n][i] / 10;
 	}
+
+	if (CheckEndGame())
+	{
+		GM = END_GAME;
+		return;
+	}
+
+
 	CurrentFigure.Reset(0);
 	for (int i = 0; i < 4; ++i)
 	{
@@ -206,7 +213,6 @@ void APlayerCam::SetOnBoard()
 			Cubus->SetActorLocation(FVector(CurrentFigureA[i].x * 100, CurrentFigureA[i].y * 100, 400.0f));
 			CurrentFigureA[i].FigureNum = i;
 			CurrentFigure.Add(Cubus);
-			AllFigures.Add(Cubus);
 		}
 	}
 	Spawned = true;
@@ -282,11 +288,7 @@ void APlayerCam::MoveDown()
 		ReturnCoords();
 		SetOnField();
 
-		if (CheckEndGame())
-		{
-			GM = END_GAME;
-			return;
-		}
+	
 
 		CheckLine();
 		RefreshPtrArray();
@@ -407,14 +409,11 @@ void APlayerCam::RefreshPtrArray()
 }
 bool APlayerCam::CheckEndGame()
 {
-	for (int i = 0; i < FieldLength; ++i)
+	for (int i = 0; i < CurrentFigureA.Num(); ++i)
 	{
-		if (LogicArray[i][1])
+		//Если место спауна уже занято другими фигурами - то спавнить новую фигуру низя и игра окончена
+		if (LogicArray[CurrentFigureA[i].x][CurrentFigureA[i].y])
 		{
-			//Чтобы указатели в догическом не затирались 
-		
-			--UserScore;
-
 			return true;
 		}
 	}
@@ -460,12 +459,7 @@ void APlayerCam::RestartGame()
 		}
 	}
 
-	for (int i = 0; i < AllFigures.Num(); ++i)
-	{
-		AllFigures[i]->Destroy();
-		AllFigures[i] = nullptr;
-	}
-	AllFigures.Reset(0);
+
 
 
 	UserScore = 0;
