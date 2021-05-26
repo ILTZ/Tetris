@@ -10,7 +10,7 @@
 #include "Components/BoxComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
-
+#include "Effects.h"
 
 #include "PlayerCam.generated.h"
 
@@ -62,6 +62,8 @@ private:
 	//Массив для хранения координат кубов
 	TArray<TArray<int>> FiguresArray;
 
+	void DebugFieldRend();
+
 	struct CurrentPoint
 	{
 		int x;
@@ -72,6 +74,10 @@ private:
 	TArray<CurrentPoint> CurrentFigureA;
 	TArray<CurrentPoint> CurrentFigureB;
 
+
+	AEffects* CurrentEffect = nullptr;
+	void SetEffectOnBoard();
+	UMaterialInstance* EffectInst = nullptr;
 
 	//Все цвета
 	TArray<UMaterialInstance*> ColorsForBlocks;
@@ -86,6 +92,8 @@ private:
 
 	//Добавляет фигуру с текущими координатами в логический массив
 	void SetOnField();
+	//Располагает блоки на поле в зависимости от их х/y значений
+	void RendOnField();
 	///
 	void LeftMove();
 	void RightMove();

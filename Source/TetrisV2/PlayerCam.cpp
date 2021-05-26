@@ -33,7 +33,8 @@ APlayerCam::APlayerCam()
 		(TEXT("MaterialInstanceConstant'/Game/Materials/Instances/GreenColor_Inst.GreenColor_Inst'")).Get();
 	UMaterialInstance* OrangeColor = ConstructorHelpers::FObjectFinderOptional<UMaterialInstance>
 		(TEXT("MaterialInstanceConstant'/Game/Materials/Instances/OrangeColor_Inst.OrangeColor_Inst'")).Get();
-
+	EffectInst = ConstructorHelpers::FObjectFinderOptional<UMaterialInstance>
+		(TEXT("MaterialInstanceConstant'/Game/Materials/Instances/EffectMaterial_Inst.EffectMaterial_Inst'")).Get();
 
 
 	ColorsForBlocks.Add(BlueColor);
@@ -43,7 +44,7 @@ APlayerCam::APlayerCam()
 
 
 
-
+	
 
 	GM = MENU;
 }
@@ -64,11 +65,7 @@ void APlayerCam::Tick(float DeltaTime)
 
 	if (Spawned && (GM == START_GAME))
 	{
-
-		for (int i = 0; i < CurrentFigure.Num(); ++i)
-		{
-			CurrentFigure[i]->SetActorLocation(FVector(CurrentFigureA[i].x * 100, CurrentFigureA[i].y * 100, 0.0f));
-		}
+		RendOnField();
 
 		bufferTime += DeltaTime;
 		if (bufferTime >= Time)
@@ -78,7 +75,12 @@ void APlayerCam::Tick(float DeltaTime)
 			static int count = 0;
 		}
 
-		/*FString Count = "";
+	}
+
+}
+void APlayerCam::DebugFieldRend()
+{
+	FString Count = "";
 		FString Temp = "";
 		for (int i = 0; i < FieldHight; ++i)
 		{
@@ -109,16 +111,8 @@ void APlayerCam::Tick(float DeltaTime)
 			Count += '\n';
 		}
 		GEngine->AddOnScreenDebugMessage(0, 5.f, FColor::Blue, Count);
-		GEngine->AddOnScreenDebugMessage(20, 5.f, FColor::Blue, TEXT("///////////////////////////////"));*/
-
-
-	}
-
-
-	
-
+		GEngine->AddOnScreenDebugMessage(20, 5.f, FColor::Blue, TEXT("///////////////////////////////"));
 }
-
 
 
 
@@ -143,6 +137,7 @@ void APlayerCam::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 ///////////////////////////////////////////////////////////////
 void APlayerCam::FillArrays()
 {
+
 	TArray<int> Figures;
 	/*FiguresArray.Add(Figures = { 1,3,5,7 }); // Палка вертикальная |
 	FiguresArray.Add(Figures = { 2,4,5,7 }); // Зигзаг '-.
@@ -187,7 +182,7 @@ void APlayerCam::SetOnBoard()
 	Spawned = false;
 	CurrentNumberFigure = FMath::RandRange(0, 6);
 	int n = CurrentNumberFigure;
-	int RandColor = FMath::RandRange(0, ColorsForBlocks.Num() - 1);
+	int RandColor = FMath::RandRange(0, ColorsForBlocks.Num() - 2); // Последний цвет всегда для эффектов 
 
 	for (int i = 0; i < 4; ++i)
 	{
@@ -228,6 +223,13 @@ void APlayerCam::SetOnField()
 	}
 
 	++UserScore;
+}
+void APlayerCam::RendOnField()
+{
+	for (int i = 0; i < CurrentFigure.Num(); ++i)
+	{
+		CurrentFigure[i]->SetActorLocation(FVector(CurrentFigureA[i].x * 100, CurrentFigureA[i].y * 100, 0.0f));
+	}
 }
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
