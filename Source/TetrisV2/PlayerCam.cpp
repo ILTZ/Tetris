@@ -78,44 +78,7 @@ void APlayerCam::Tick(float DeltaTime)
 			static int count = 0;
 		}
 
-		/*FString Count = "";
-		FString Temp = "";
-		for (int i = 0; i < FieldHight; ++i)
-		{
-			Temp = "";
-			for (int j = 0; j < FieldLength; ++j)
-			{
-				if (LogicPtrArray[j][i])
-				{
-					Count += "1 ";
-				}
-				else
-				{
-					Count += "0 ";
-				}
-
-				if (LogicArray[j][i])
-				{
-					Temp += "1 ";
-				}
-				else
-				{
-					Temp += "0 ";
-				}
-
-
-			}
-			Count += ("      " + Temp);
-			Count += '\n';
-		}
-		GEngine->AddOnScreenDebugMessage(0, 5.f, FColor::Blue, Count);
-		GEngine->AddOnScreenDebugMessage(20, 5.f, FColor::Blue, TEXT("///////////////////////////////"));*/
-
-
 	}
-
-
-	
 
 }
 
@@ -144,13 +107,6 @@ void APlayerCam::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 void APlayerCam::FillArrays()
 {
 	TArray<int> Figures;
-	/*FiguresArray.Add(Figures = { 1,3,5,7 }); // Палка вертикальная |
-	FiguresArray.Add(Figures = { 2,4,5,7 }); // Зигзаг '-.
-	FiguresArray.Add(Figures = { 3,5,4,6 }); // Зигзаг .-'
-	FiguresArray.Add(Figures = { 3,5,4,7 }); // Пиравида -|
-	FiguresArray.Add(Figures = { 2,3,5,7 }); // Загнутая палка `|
-	FiguresArray.Add(Figures = { 3,5,7,6 }); // Загнутая палка _|
-	FiguresArray.Add(Figures = { 2,3,4,5 }); // Кубек */
 
 	FiguresArray.Add(Figures = { 5 ,15,25,35 }); // Палка вертикальная |
 	FiguresArray.Add(Figures = { 14,24,25,35 }); // Зигзаг '-.
@@ -176,8 +132,6 @@ void APlayerCam::FillArrays()
 	CurrentFigureA.Init(point, 4);
 
 
-
-	//CurrentNumberFigure = FMath::RandRange(0, 6);
 	CurrentNumberFigure = 0;
 }
 
