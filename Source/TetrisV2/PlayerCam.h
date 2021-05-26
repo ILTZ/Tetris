@@ -131,6 +131,8 @@ private:
 	// + перемещаем указатели
 	void RefreshPtrArray();
 
+	void ClearLogicAndPtrArrays();
+	
 
 	// Хранит "местоположение" на доске (1-ми и 0-ми)
 	// 0 0 0 0 0 0

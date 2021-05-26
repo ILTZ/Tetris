@@ -397,6 +397,19 @@ void APlayerCam::PauseGame()
 }
 void APlayerCam::RestartGame()
 {
+	ClearLogicAndPtrArrays();
+
+
+
+
+	UserScore = 0;
+
+	FillArrays();
+	SetOnBoard();
+	GM = START_GAME;
+}
+void APlayerCam::ClearLogicAndPtrArrays()
+{
 	for (int i = 0; i < FieldHight; ++i)
 	{
 		for (int j = 0; j < FieldLength; ++j)
@@ -412,13 +425,4 @@ void APlayerCam::RestartGame()
 			}
 		}
 	}
-
-
-
-
-	UserScore = 0;
-
-	FillArrays();
-	SetOnBoard();
-	GM = START_GAME;
 }
