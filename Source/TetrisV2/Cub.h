@@ -7,6 +7,7 @@
 
 #include <Components/StaticMeshComponent.h>
 #include <Components/BoxComponent.h>
+#include "Effects.h"
 
 #include "Cub.generated.h"
 
@@ -24,7 +25,10 @@ public:
 	ACub();
 
 	void SetColor(UMaterialInstance* Color);
+	void ReturnCoreColor();
 
+	void SetEffect(AEffects* effect);
+	void ClearEffect();
 
 protected:
 	// Called when the game starts or when spawned
@@ -34,10 +38,13 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+
+	
 private:
 	UStaticMeshComponent* CoreMesh;
-	UMaterialInstance* CoreColor;
+	UMaterialInstance* CoreColor = nullptr;
+	AEffects* CurrentEffect = nullptr;
 
-
+public:
 
 };

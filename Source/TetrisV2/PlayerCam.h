@@ -75,9 +75,7 @@ private:
 	TArray<CurrentPoint> CurrentFigureB;
 
 
-	AEffects* CurrentEffect = nullptr;
-	void SetEffectOnBoard();
-	UMaterialInstance* EffectInst = nullptr;
+	
 
 	//Все цвета
 	TArray<UMaterialInstance*> ColorsForBlocks;
@@ -145,6 +143,8 @@ private:
 	// 0 0 1 0 0 0
 	// 0 1 1 1 0 0
 	TArray<TArray<int>> LogicArray;
+	void ClearLogicAndPtrArray();
+
 
 	const int FieldLength = 10;
 	const int FieldHight = 20;
@@ -173,5 +173,26 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void PauseGame();
 
+/////////////////////////Рандомно генерящиеся эффекты
+private:
+	AEffects* CurrentEffect = nullptr;
+	UMaterialInstance* EffectInst = nullptr;
+
+	bool TryGenEffect();
+	ACub* ChouseCub();
+	const int RandChance = 3;
+	void TrySetEffect();
+
+	//Для запоминания ненулевых позиций в массиве указателей(для последующего рандома)
+	struct ValuableCoords
+	{
+		int x;
+		int y;
+	};
+	TArray<ValuableCoords> ValCoords;
+	void FillValCoords();
+
+public:
+	void ClearEffect();
 
 };

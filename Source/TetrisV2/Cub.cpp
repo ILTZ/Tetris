@@ -32,14 +32,35 @@ void ACub::BeginPlay()
 void ACub::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
 
 void ACub::SetColor(UMaterialInstance* Color)
 {
+	if (!CoreColor)
+	{
+		CoreColor = Color;
+	}
 	if (CoreMesh)
 	{
 		CoreMesh->SetMaterial(0, Color);
 	}
 }
-
+void ACub::ReturnCoreColor()
+{
+	if (CoreMesh)
+	{
+		CoreMesh->SetMaterial(0, CoreColor);
+	}
+}
+void ACub::SetEffect(AEffects* effect)
+{
+	if (effect != nullptr)
+	{
+		CurrentEffect = effect;
+	}
+}
+void ACub::ClearEffect()
+{
+	CurrentEffect = nullptr;
+	ReturnCoreColor();
+}

@@ -4,6 +4,8 @@
 #include "Effects.h"
 #include "Kismet/GameplayStatics.h"
 #include "TimerManager.h"
+#include "Cub.h"
+#include "PlayerCam.h"
 
 // Sets default values
 AEffects::AEffects()
@@ -22,8 +24,8 @@ void AEffects::BeginPlay()
 {
 	Super::BeginPlay();
 
-	FTimerHandle TimerHandle;
-	GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &AEffects::DecreaseLifeTime, 1.f, true);
+	/*FTimerHandle TimerHandle;
+	GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &AEffects::DecreaseLifeTime, 1.f, true);*/
 }
 
 // Called every frame
@@ -31,15 +33,16 @@ void AEffects::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (IsLife())
-	{
-		Destroy();
-	}
+
 }
 void AEffects::DecreaseLifeTime()
 {
 	--LifeTime;
 	GEngine->AddOnScreenDebugMessage(20, 10.f, FColor::Blue, FString::FromInt(LifeTime) + " step remaning.");
+	if (IsLife())
+	{
+		KillHimSelf();
+	}
 }
 
 
@@ -85,3 +88,32 @@ void AEffects::EffectTimeSlowDown()
 
 }
 
+void AEffects::AttachToCub(AActor* Cubus)
+{
+	if (Cubus != nullptr)
+	{
+		AttachedCub = Cubus;
+	}
+}
+void AEffects::AttachToPlayerCam(AActor* PC)
+{
+	if (PC != nullptr)
+	{
+		AttachedPlayerCam = PC;
+	}
+}
+void AEffects::KillHimSelf()
+{
+	APlayerCam* cam = Cast<APlayerCam>(AttachedPlayerCam);
+	ACub* cub = Cast<ACub>(AttachedCub);
+
+	if (cam)
+	{
+		cam->ClearEffect();
+	}
+	if (cub)
+	{
+		cub->ClearEffect();
+	}
+	Destroy();
+}

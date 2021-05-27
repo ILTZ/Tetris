@@ -130,6 +130,8 @@ void APlayerCam::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 	PlayerInputComponent->BindAction("DownDir", IE_Released, this, &APlayerCam::ChangeTime);
 
 	PlayerInputComponent->BindAction("Pause", IE_Pressed, this, &APlayerCam::PauseGame);
+
+	PlayerInputComponent->BindAction("RandEf", IE_Pressed, this, &APlayerCam::TrySetEffect);
 }
 
 ///////////////////////////////////////////////////////////////
@@ -139,13 +141,6 @@ void APlayerCam::FillArrays()
 {
 
 	TArray<int> Figures;
-	/*FiguresArray.Add(Figures = { 1,3,5,7 }); // Палка вертикальная |
-	FiguresArray.Add(Figures = { 2,4,5,7 }); // Зигзаг '-.
-	FiguresArray.Add(Figures = { 3,5,4,6 }); // Зигзаг .-'
-	FiguresArray.Add(Figures = { 3,5,4,7 }); // Пиравида -|
-	FiguresArray.Add(Figures = { 2,3,5,7 }); // Загнутая палка `|
-	FiguresArray.Add(Figures = { 3,5,7,6 }); // Загнутая палка _|
-	FiguresArray.Add(Figures = { 2,3,4,5 }); // Кубек */
 
 	FiguresArray.Add(Figures = { 5 ,15,25,35 }); // Палка вертикальная |
 	FiguresArray.Add(Figures = { 14,24,25,35 }); // Зигзаг '-.
@@ -172,7 +167,7 @@ void APlayerCam::FillArrays()
 
 
 
-	//CurrentNumberFigure = FMath::RandRange(0, 6);
+
 	CurrentNumberFigure = 0;
 }
 
@@ -182,7 +177,7 @@ void APlayerCam::SetOnBoard()
 	Spawned = false;
 	CurrentNumberFigure = FMath::RandRange(0, 6);
 	int n = CurrentNumberFigure;
-	int RandColor = FMath::RandRange(0, ColorsForBlocks.Num() - 2); // Последний цвет всегда для эффектов 
+	int RandColor = FMath::RandRange(0, ColorsForBlocks.Num() - 1); 
 
 	for (int i = 0; i < 4; ++i)
 	{
@@ -296,6 +291,12 @@ void APlayerCam::MoveDown()
 		RefreshPtrArray();
 
 		SetOnBoard();
+
+	}
+
+	if (CurrentEffect)
+	{
+		CurrentEffect->DecreaseLifeTime();
 	}
 }
 void APlayerCam::DownDirection()
@@ -445,6 +446,19 @@ void APlayerCam::PauseGame()
 }
 void APlayerCam::RestartGame()
 {
+	ClearLogicAndPtrArray();
+
+
+
+
+	UserScore = 0;
+
+	FillArrays();
+	SetOnBoard();
+	GM = START_GAME;
+}
+void APlayerCam::ClearLogicAndPtrArray()
+{
 	for (int i = 0; i < FieldHight; ++i)
 	{
 		for (int j = 0; j < FieldLength; ++j)
@@ -460,13 +474,63 @@ void APlayerCam::RestartGame()
 			}
 		}
 	}
+}
+/////////////////////////////////////////////////////////////////////
+//////////////            Эффекты поля           ////////////////////
+/////////////////////////////////////////////////////////////////////
+bool APlayerCam::TryGenEffect()
+{
+	const int TryResult = FMath::RandRange(1, 10);
 
 
+	return ((TryResult <= 3) ? true : false);
+}
+ACub* APlayerCam::ChouseCub()
+{
+	int RandCub = FMath::RandRange(0, ValCoords.Num() - 1);
+	if (LogicPtrArray[ValCoords[RandCub].x][ValCoords[RandCub].y])
+	{
+		return LogicPtrArray[ValCoords[RandCub].x][ValCoords[RandCub].y];
+	}
+	
+	return nullptr;
+}
+void APlayerCam::TrySetEffect()
+{
+	
+		FillValCoords();
+		ACub* EffectCub = ChouseCub();
+
+		EffectCub->SetColor(EffectInst);
+		CurrentEffect = GetWorld()->SpawnActor<AEffects>();
+		EffectCub->SetEffect(CurrentEffect);
 
 
-	UserScore = 0;
-
-	FillArrays();
-	SetOnBoard();
-	GM = START_GAME;
+		CurrentEffect->AttachToCub(EffectCub);
+		CurrentEffect->AttachToPlayerCam(this);
+	
+}
+void APlayerCam::FillValCoords()
+{
+	if (ValCoords.Num() >= 1)
+	{
+		ValCoords.Reset(0);
+	}
+	for (int i = 0; i < FieldLength; ++i)
+	{
+		for (int j = 0; j < FieldHight; ++j)
+		{
+			if (LogicPtrArray[i][j])
+			{
+				ValuableCoords XYvalue;
+				XYvalue.x = i;
+				XYvalue.y = j;
+				ValCoords.Add(XYvalue);
+			}
+		}
+	}
+}
+void APlayerCam::ClearEffect()
+{
+	CurrentEffect = nullptr;
 }

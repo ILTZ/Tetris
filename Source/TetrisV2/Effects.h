@@ -40,33 +40,40 @@ private:
 	
 	int LifeTime = 10;
 
-	void DecreaseLifeTime();
+	
 
 
 
 	RandEffects CurrentEffect;
+
+	AActor* AttachedCub = nullptr;
+	AActor* AttachedPlayerCam = nullptr;
 	
-	
-	bool GC = false; //GetController
+
 
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
 	RandEffects GetEffect() { return CurrentEffect; }
-
 	bool IsLife() { return ((LifeTime < 1) ? true : false); }
 
 
 
 	void ActivateEffect();
+	void DecreaseLifeTime();
+
+	void AttachToCub(AActor* Cubus);
+	void AttachToPlayerCam(AActor* PC);
 
 
+private:
 
 	void EffectSpeedUp();
 	void EffectDestroyLineVertical();
 	void EffectOnlyPalka();
 	void EffectTimeSlowDown();
 
+	void KillHimSelf();
 
 };
