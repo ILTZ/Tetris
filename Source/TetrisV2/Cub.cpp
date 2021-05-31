@@ -64,3 +64,11 @@ void ACub::ClearEffect()
 	CurrentEffect = nullptr;
 	ReturnCoreColor();
 }
+void ACub::DestroyThisCub()
+{
+	if (CurrentEffect)
+	{
+		CurrentEffect->KillHimSelf(true);
+	}
+	this->Destroy();
+}

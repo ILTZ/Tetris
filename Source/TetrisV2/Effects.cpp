@@ -14,7 +14,7 @@ AEffects::AEffects()
 	PrimaryActorTick.bCanEverTick = true;
 
 	CurrentEffect = RandEffects(FMath::RandRange(0, 3));
-	
+	CurrentEffect = TIME_SPEEDUP;
 
 
 	
@@ -46,48 +46,6 @@ void AEffects::DecreaseLifeTime()
 }
 
 
-void AEffects::ActivateEffect()
-{
-	switch (CurrentEffect)
-	{
-	case TIME_SPEEDUP:
-		EffectSpeedUp();
-		break;
-
-	case DESTROY_LINE_VERTICAL:
-		EffectDestroyLineVertical();
-		break;
-
-	case ONLY_PALKA:
-		EffectOnlyPalka();
-		break;
-
-	case TIME_SLOWDOWN:
-		EffectTimeSlowDown();
-		break;
-	}
-}
-
-void AEffects::EffectSpeedUp()
-{
-
-}
-
-void AEffects::EffectDestroyLineVertical()
-{
-
-}
-
-void AEffects::EffectOnlyPalka()
-{
-
-}
-
-void AEffects::EffectTimeSlowDown()
-{
-
-}
-
 void AEffects::AttachToCub(AActor* Cubus)
 {
 	if (Cubus != nullptr)
@@ -102,14 +60,20 @@ void AEffects::AttachToPlayerCam(AActor* PC)
 		AttachedPlayerCam = PC;
 	}
 }
-void AEffects::KillHimSelf()
+void AEffects::KillHimSelf(bool activate)
 {
+	
+
 	APlayerCam* cam = Cast<APlayerCam>(AttachedPlayerCam);
 	ACub* cub = Cast<ACub>(AttachedCub);
 
 	if (cam)
 	{
 		cam->ClearEffect();
+		if (activate)
+		{
+			cam->ActivateEffect(CurrentEffect);
+		}
 	}
 	if (cub)
 	{

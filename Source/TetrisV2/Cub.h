@@ -47,4 +47,7 @@ private:
 
 public:
 
+	//чтобы не переопределять деструктор или "this->Destroy()"
+	void DestroyThisCub();
+
 };

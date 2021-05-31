@@ -183,7 +183,7 @@ private:
 	const int RandChance = 3;
 	void TrySetEffect();
 
-	//Для запоминания ненулевых позиций в массиве указателей(для последующего рандома)
+	//Для запоминания ненулевых позиций в массиве указателей(для последующего рандома куба, на котором будет висеть эффект)
 	struct ValuableCoords
 	{
 		int x;
@@ -192,7 +192,19 @@ private:
 	TArray<ValuableCoords> ValCoords;
 	void FillValCoords();
 
+	int LifeTimeEffect = 10;
+	void DecreaseLifeTime();
+
+	bool EffectActivated = false;
+	void CheckEffect();
+
+	void ReturnToNormal();
 public:
 	void ClearEffect();
+	void ActivateEffect(RandEffects Effect);
 
+	void SpeedUpActivate();
+	void SpeedDownActivate();
+
+	
 };

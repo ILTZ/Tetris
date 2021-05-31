@@ -179,6 +179,7 @@ void APlayerCam::SetOnBoard()
 	int n = CurrentNumberFigure;
 	int RandColor = FMath::RandRange(0, ColorsForBlocks.Num() - 1); 
 
+
 	for (int i = 0; i < 4; ++i)
 	{
 		CurrentFigureA[i].x = FiguresArray[n][i] % 10;
@@ -292,20 +293,25 @@ void APlayerCam::MoveDown()
 
 		SetOnBoard();
 
+		CheckEffect();
 	}
 
-	if (CurrentEffect)
-	{
-		CurrentEffect->DecreaseLifeTime();
-	}
+	
+	
 }
 void APlayerCam::DownDirection()
 {
-	Time = 0.1f;
+	if (!EffectActivated)
+	{
+		Time = 0.1f;
+	}
 }
 void APlayerCam::ChangeTime()
 {
-	Time = 1.0f;
+	if (!EffectActivated)
+	{
+		Time = 1.0f;
+	}
 }
 //////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////
@@ -386,7 +392,7 @@ void APlayerCam::RefreshPtrArray()
 		{
 			for (int c = 0; c < FieldLength; ++c)
 			{
-				LogicPtrArray[c][i]->Destroy();
+				LogicPtrArray[c][i]->DestroyThisCub();
 				LogicPtrArray[c][i] = nullptr;
 			}
 
@@ -533,4 +539,69 @@ void APlayerCam::FillValCoords()
 void APlayerCam::ClearEffect()
 {
 	CurrentEffect = nullptr;
+}
+void APlayerCam::SpeedUpActivate()
+{
+	EffectActivated = true;
+	Time = 0.2f;
+}
+void APlayerCam::SpeedDownActivate()
+{
+	EffectActivated = true;
+	Time = 2.0f;
+}
+void APlayerCam::DecreaseLifeTime()
+{
+	--LifeTimeEffect;
+}
+void APlayerCam::CheckEffect()
+{
+	if (CurrentEffect)
+	{
+		CurrentEffect->DecreaseLifeTime();
+	}
+
+	if (EffectActivated)
+	{
+		DecreaseLifeTime();
+		if (LifeTimeEffect < 1)
+		{
+
+			ReturnToNormal();
+			
+			GEngine->AddOnScreenDebugMessage(11, 5.f, FColor::Green, "SpeedUpEffect GoOn!");
+		}
+
+	}
+}
+void APlayerCam::ReturnToNormal()
+{
+	EffectActivated = false;
+	ChangeTime();
+
+	LifeTimeEffect = 10;
+}
+void APlayerCam::ActivateEffect(RandEffects Effect)
+{
+	switch (Effect)
+	{
+	case TIME_SPEEDUP:
+		SpeedUpActivate();
+		break;
+
+	case TIME_SLOWDOWN:
+		SpeedDownActivate();
+		break;
+
+	case ONLY_PALKA:
+
+		break;
+
+	case DESTROY_LINE_VERTICAL:
+
+		break;
+
+	default:
+		GEngine->AddOnScreenDebugMessage(5, 5.f, FColor::Red, "Effect isn't found!!!");
+	}
 }

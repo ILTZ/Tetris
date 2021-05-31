@@ -74,6 +74,7 @@ private:
 	void EffectOnlyPalka();
 	void EffectTimeSlowDown();
 
-	void KillHimSelf();
+public:
+	void KillHimSelf(bool activate = false);
 
 };
