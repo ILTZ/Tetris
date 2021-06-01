@@ -13,8 +13,8 @@ AEffects::AEffects()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	CurrentEffect = RandEffects(FMath::RandRange(0, 3));
-	CurrentEffect = TIME_SPEEDUP;
+	CurrentEffect = RandEffects(FMath::RandRange(0, 2));
+	//CurrentEffect = TIME_SPEEDUP;
 
 
 	

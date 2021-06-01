@@ -173,29 +173,45 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void PauseGame();
 
+	UFUNCTION(BlueprintCallable)
+	bool EffectOnBoard() { return (CurrentEffect ? true : false); }
+
+	UFUNCTION(BlueprintCallable)
+	bool EffectWasActivated() { return EffectActivated; }
+
+	UFUNCTION(BlueprintCallable)
+	int LifeTimeRamaninf() { return LifeTimeEffect; }
+
+	UFUNCTION(BlueprintCallable)
+	FString WhatsEffect() { return BuildStringEffect(); }
+
+
+
 /////////////////////////Рандомно генерящиеся эффекты
 private:
 	AEffects* CurrentEffect = nullptr;
 	UMaterialInstance* EffectInst = nullptr;
-
+	//Возбращает правду, если число (0-10) <= "RandChance"
 	bool TryGenEffect();
+	//Выбирает 
 	ACub* ChouseCub();
 	const int RandChance = 3;
 	void TrySetEffect();
-
 	//Для запоминания ненулевых позиций в массиве указателей(для последующего рандома куба, на котором будет висеть эффект)
-	struct ValuableCoords
+	struct ValuableCoords //Можно было бы и из имеющейся структуры, но так как-то понятнее
 	{
 		int x;
 		int y;
 	};
 	TArray<ValuableCoords> ValCoords;
+	//Добавляем в массим выше координаты кубов, находящихся на поле
 	void FillValCoords();
-
+	//Сколько эффект будет действовать
 	int LifeTimeEffect = 10;
 	void DecreaseLifeTime();
-
 	bool EffectActivated = false;
+	bool SpeedLock = false;
+	//Следит за неактивированным и активированным эффектом
 	void CheckEffect();
 
 	void ReturnToNormal();
@@ -203,8 +219,13 @@ public:
 	void ClearEffect();
 	void ActivateEffect(RandEffects Effect);
 
+private:
 	void SpeedUpActivate();
 	void SpeedDownActivate();
 
+	bool OnlyPalka = false;
+	void OnlyPalkaActivate();
 	
+	FString CurrentEffectString;
+	FString BuildStringEffect();
 };

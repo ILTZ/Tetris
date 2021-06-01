@@ -177,6 +177,10 @@ void APlayerCam::SetOnBoard()
 	Spawned = false;
 	CurrentNumberFigure = FMath::RandRange(0, 6);
 	int n = CurrentNumberFigure;
+	if (OnlyPalka)
+	{
+		n = 0;
+	}
 	int RandColor = FMath::RandRange(0, ColorsForBlocks.Num() - 1); 
 
 
@@ -294,6 +298,8 @@ void APlayerCam::MoveDown()
 		SetOnBoard();
 
 		CheckEffect();
+
+		TrySetEffect();
 	}
 
 	
@@ -301,14 +307,14 @@ void APlayerCam::MoveDown()
 }
 void APlayerCam::DownDirection()
 {
-	if (!EffectActivated)
+	if (!SpeedLock)
 	{
 		Time = 0.1f;
 	}
 }
 void APlayerCam::ChangeTime()
 {
-	if (!EffectActivated)
+	if (!SpeedLock)
 	{
 		Time = 1.0f;
 	}
@@ -486,10 +492,14 @@ void APlayerCam::ClearLogicAndPtrArray()
 /////////////////////////////////////////////////////////////////////
 bool APlayerCam::TryGenEffect()
 {
-	const int TryResult = FMath::RandRange(1, 10);
+	if (!CurrentEffect && !EffectActivated)
+	{
+		const int TryResult = FMath::RandRange(1, 10);
 
 
-	return ((TryResult <= 3) ? true : false);
+		return ((TryResult <= RandChance) ? true : false);
+	}
+	return false;
 }
 ACub* APlayerCam::ChouseCub()
 {
@@ -503,8 +513,18 @@ ACub* APlayerCam::ChouseCub()
 }
 void APlayerCam::TrySetEffect()
 {
-	
+		if (!TryGenEffect())
+		{
+			return;
+		}
+		
 		FillValCoords();
+		
+		if (ValCoords.Num() < 1)
+		{
+			return;
+		}
+
 		ACub* EffectCub = ChouseCub();
 
 		EffectCub->SetColor(EffectInst);
@@ -543,11 +563,13 @@ void APlayerCam::ClearEffect()
 void APlayerCam::SpeedUpActivate()
 {
 	EffectActivated = true;
+	SpeedLock = true;
 	Time = 0.2f;
 }
 void APlayerCam::SpeedDownActivate()
 {
 	EffectActivated = true;
+	SpeedLock = true;
 	Time = 2.0f;
 }
 void APlayerCam::DecreaseLifeTime()
@@ -569,7 +591,7 @@ void APlayerCam::CheckEffect()
 
 			ReturnToNormal();
 			
-			GEngine->AddOnScreenDebugMessage(11, 5.f, FColor::Green, "SpeedUpEffect GoOn!");
+			GEngine->AddOnScreenDebugMessage(11, 5.f, FColor::Green, "Effect GoOn!");
 		}
 
 	}
@@ -577,7 +599,9 @@ void APlayerCam::CheckEffect()
 void APlayerCam::ReturnToNormal()
 {
 	EffectActivated = false;
+	SpeedLock = false;
 	ChangeTime();
+	OnlyPalka = false;
 
 	LifeTimeEffect = 10;
 }
@@ -587,21 +611,31 @@ void APlayerCam::ActivateEffect(RandEffects Effect)
 	{
 	case TIME_SPEEDUP:
 		SpeedUpActivate();
-		break;
+		CurrentEffectString = "SpeedUp " ;
+		break; 
 
 	case TIME_SLOWDOWN:
 		SpeedDownActivate();
+		CurrentEffectString = "SlowDown ";
 		break;
 
 	case ONLY_PALKA:
-
+		OnlyPalkaActivate();
+		CurrentEffectString = "OnlyPalka ";
 		break;
 
-	case DESTROY_LINE_VERTICAL:
-
-		break;
 
 	default:
 		GEngine->AddOnScreenDebugMessage(5, 5.f, FColor::Red, "Effect isn't found!!!");
 	}
+}
+void APlayerCam::OnlyPalkaActivate()
+{
+	OnlyPalka = true;
+	EffectActivated = true;
+}
+FString APlayerCam::BuildStringEffect()
+{
+	FString OutString = CurrentEffectString += FString::FromInt(LifeTimeEffect) + " remaning";
+	return OutString;
 }
