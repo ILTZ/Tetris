@@ -210,6 +210,7 @@ private:
 	int LifeTimeEffect = 10;
 	void DecreaseLifeTime();
 	bool EffectActivated = false;
+	//Чтобы нельзя было убыстрять кубы во время дейстия ускорения/замедления
 	bool SpeedLock = false;
 	//Следит за неактивированным и активированным эффектом
 	void CheckEffect();
@@ -222,10 +223,12 @@ public:
 private:
 	void SpeedUpActivate();
 	void SpeedDownActivate();
+	float TempTime = 0.0f;
+
 
 	bool OnlyPalka = false;
 	void OnlyPalkaActivate();
 	
-	FString CurrentEffectString;
+	FString CurrentEffectString = "";
 	FString BuildStringEffect();
 };

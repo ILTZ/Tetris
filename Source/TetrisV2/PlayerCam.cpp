@@ -309,14 +309,14 @@ void APlayerCam::DownDirection()
 {
 	if (!SpeedLock)
 	{
-		Time = 0.1f;
+		Time /= 10.f;
 	}
 }
 void APlayerCam::ChangeTime()
 {
 	if (!SpeedLock)
 	{
-		Time = 1.0f;
+		Time *= 10.f;
 	}
 }
 //////////////////////////////////////////////////////////////////////
@@ -562,15 +562,17 @@ void APlayerCam::ClearEffect()
 }
 void APlayerCam::SpeedUpActivate()
 {
+	TempTime = Time;
 	EffectActivated = true;
 	SpeedLock = true;
-	Time = 0.2f;
+	Time /= 5.f;
 }
 void APlayerCam::SpeedDownActivate()
 {
+	TempTime = Time;
 	EffectActivated = true;
 	SpeedLock = true;
-	Time = 2.0f;
+	Time *= 2.0f;
 }
 void APlayerCam::DecreaseLifeTime()
 {
@@ -600,13 +602,14 @@ void APlayerCam::ReturnToNormal()
 {
 	EffectActivated = false;
 	SpeedLock = false;
-	ChangeTime();
+	Time = TempTime;
 	OnlyPalka = false;
 
 	LifeTimeEffect = 10;
 }
 void APlayerCam::ActivateEffect(RandEffects Effect)
 {
+	TempTime = Time;
 	switch (Effect)
 	{
 	case TIME_SPEEDUP:
@@ -630,12 +633,12 @@ void APlayerCam::ActivateEffect(RandEffects Effect)
 	}
 }
 void APlayerCam::OnlyPalkaActivate()
-{
+{	
 	OnlyPalka = true;
 	EffectActivated = true;
 }
 FString APlayerCam::BuildStringEffect()
 {
-	FString OutString = CurrentEffectString += FString::FromInt(LifeTimeEffect) + " remaning";
+	FString OutString = CurrentEffectString + FString::FromInt(LifeTimeEffect) + " steps\nremaning";
 	return OutString;
 }
