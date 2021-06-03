@@ -309,14 +309,14 @@ void APlayerCam::DownDirection()
 {
 	if (!SpeedLock)
 	{
-		Time /= 10.f;
+		Time = 0.1f;
 	}
 }
 void APlayerCam::ChangeTime()
 {
 	if (!SpeedLock)
 	{
-		Time *= 10.f;
+		Time = 1.f;
 	}
 }
 //////////////////////////////////////////////////////////////////////
@@ -572,7 +572,7 @@ void APlayerCam::SpeedDownActivate()
 	TempTime = Time;
 	EffectActivated = true;
 	SpeedLock = true;
-	Time *= 2.0f;
+	Time *= 1.5f;
 }
 void APlayerCam::DecreaseLifeTime()
 {

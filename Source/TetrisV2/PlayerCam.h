@@ -230,5 +230,6 @@ private:
 	void OnlyPalkaActivate();
 	
 	FString CurrentEffectString = "";
+	//Чтобы собирать строку для отправки на виджет 
 	FString BuildStringEffect();
 };
