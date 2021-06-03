@@ -21,6 +21,7 @@ enum GameMode
 	START_GAME	= 1		UMETA(DisplayName = "StartGame"),
 	PAUSE		= 2		UMETA(DisplayName = "Pause"),
 	END_GAME	= 3		UMETA(DisplayName = "EndGame"),
+	SETTINGS	= 4		UMETA(DisplayName = "Settings"),
 };
 
 
@@ -195,7 +196,7 @@ private:
 	bool TryGenEffect();
 	//Выбирает 
 	ACub* ChouseCub();
-	const int RandChance = 3;
+	int RandChance = 3;
 	void TrySetEffect();
 	//Для запоминания ненулевых позиций в массиве указателей(для последующего рандома куба, на котором будет висеть эффект)
 	struct ValuableCoords //Можно было бы и из имеющейся структуры, но так как-то понятнее
@@ -208,6 +209,7 @@ private:
 	void FillValCoords();
 	//Сколько эффект будет действовать
 	int LifeTimeEffect = 10;
+	int CurrentLifeTime = 0;
 	void DecreaseLifeTime();
 	bool EffectActivated = false;
 	//Чтобы нельзя было убыстрять кубы во время дейстия ускорения/замедления
@@ -232,4 +234,22 @@ private:
 	FString CurrentEffectString = "";
 	//Чтобы собирать строку для отправки на виджет 
 	FString BuildStringEffect();
+
+/// <summary>
+/// /////////////Меню настроек
+/// </summary>
+
+private:
+	
+
+public:
+
+	UFUNCTION(BlueprintCallable)
+	void SwitchOnSettings() { GM = SETTINGS; }
+
+	UFUNCTION(BlueprintCallable)
+	void SwitchOnMainMenu() { GM = MENU; }
+
+	UFUNCTION(BlueprintCallable)
+	void SetSettings(int ILifeTimeEffect, int IRandChance);
 };

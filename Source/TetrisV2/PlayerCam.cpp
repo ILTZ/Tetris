@@ -562,21 +562,21 @@ void APlayerCam::ClearEffect()
 }
 void APlayerCam::SpeedUpActivate()
 {
-	TempTime = Time;
+	
 	EffectActivated = true;
 	SpeedLock = true;
-	Time /= 5.f;
+	Time = 0.2f;
 }
 void APlayerCam::SpeedDownActivate()
 {
-	TempTime = Time;
+	
 	EffectActivated = true;
 	SpeedLock = true;
-	Time *= 1.5f;
+	Time = 1.5f;
 }
 void APlayerCam::DecreaseLifeTime()
 {
-	--LifeTimeEffect;
+	--CurrentLifeTime;
 }
 void APlayerCam::CheckEffect()
 {
@@ -588,7 +588,7 @@ void APlayerCam::CheckEffect()
 	if (EffectActivated)
 	{
 		DecreaseLifeTime();
-		if (LifeTimeEffect < 1)
+		if (CurrentLifeTime < 1)
 		{
 
 			ReturnToNormal();
@@ -602,14 +602,14 @@ void APlayerCam::ReturnToNormal()
 {
 	EffectActivated = false;
 	SpeedLock = false;
-	Time = TempTime;
+	Time = 1.f;
 	OnlyPalka = false;
 
-	LifeTimeEffect = 10;
+	
 }
 void APlayerCam::ActivateEffect(RandEffects Effect)
 {
-	TempTime = Time;
+	CurrentLifeTime = LifeTimeEffect;
 	switch (Effect)
 	{
 	case TIME_SPEEDUP:
@@ -639,6 +639,14 @@ void APlayerCam::OnlyPalkaActivate()
 }
 FString APlayerCam::BuildStringEffect()
 {
-	FString OutString = CurrentEffectString + FString::FromInt(LifeTimeEffect) + " steps\nremaning";
+	FString OutString = CurrentEffectString + FString::FromInt(CurrentLifeTime) + " steps\nremaning";
 	return OutString;
+}
+/////////////////////////////////////////////////////////////////////
+////////////////////Работа с настройками/////////////////////////////
+/////////////////////////////////////////////////////////////////////
+void APlayerCam::SetSettings(int ILifeTimeEffect, int IRandChance)
+{
+	RandChance = IRandChance;
+	LifeTimeEffect = ILifeTimeEffect;
 }
