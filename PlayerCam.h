@@ -10,7 +10,7 @@
 #include "Components/BoxComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
-
+#include "Effects.h"
 
 #include "PlayerCam.generated.h"
 
@@ -21,6 +21,7 @@ enum GameMode
 	START_GAME	= 1		UMETA(DisplayName = "StartGame"),
 	PAUSE		= 2		UMETA(DisplayName = "Pause"),
 	END_GAME	= 3		UMETA(DisplayName = "EndGame"),
+
 };
 
 
@@ -62,6 +63,8 @@ private:
 	//Массив для хранения координат кубов
 	TArray<TArray<int>> FiguresArray;
 
+	void DebugFieldRend();
+
 	struct CurrentPoint
 	{
 		int x;
@@ -72,6 +75,8 @@ private:
 	TArray<CurrentPoint> CurrentFigureA;
 	TArray<CurrentPoint> CurrentFigureB;
 
+
+	
 
 	//Все цвета
 	TArray<UMaterialInstance*> ColorsForBlocks;
@@ -86,6 +91,8 @@ private:
 
 	//Добавляет фигуру с текущими координатами в логический массив
 	void SetOnField();
+	//Располагает блоки на поле в зависимости от их х/y значений
+	void RendOnField();
 	///
 	void LeftMove();
 	void RightMove();
@@ -117,7 +124,7 @@ private:
 
 	//Хранит текущую фигуру
 	TArray<ACub*> CurrentFigure;
-
+	void ClearCurrentFigure();
 
 
 	//Синхронно с логическим массивом хранит указатели на кубы(для уничтожения
@@ -131,14 +138,14 @@ private:
 	// + перемещаем указатели
 	void RefreshPtrArray();
 
-	void ClearLogicAndPtrArrays();
-	
 
 	// Хранит "местоположение" на доске (1-ми и 0-ми)
 	// 0 0 0 0 0 0
 	// 0 0 1 0 0 0
 	// 0 1 1 1 0 0
 	TArray<TArray<int>> LogicArray;
+	void ClearLogicAndPtrArray();
+
 
 	const int FieldLength = 10;
 	const int FieldHight = 20;
@@ -167,5 +174,85 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void PauseGame();
 
+	UFUNCTION(BlueprintCallable)
+	bool EffectOnBoard() { return (CurrentEffect ? true : false); }
 
+	UFUNCTION(BlueprintCallable)
+	bool EffectWasActivated() { return EffectActivated; }
+
+	UFUNCTION(BlueprintCallable)
+	int LifeTimeRamaninf() { return LifeTimeEffect; }
+
+	UFUNCTION(BlueprintCallable)
+	FString WhatsEffect() { return BuildStringEffect(); }
+
+
+
+/////////////////////////Рандомно генерящиеся эффекты
+private:
+	AEffects* CurrentEffect = nullptr;
+	void ClearCurrentEffect();
+	UMaterialInstance* EffectInst = nullptr;
+	//Возбращает правду, если число (0-10) <= "RandChance"
+	bool TryGenEffect();
+	//Выбирает 
+	ACub* ChouseCub();
+	int RandChance = 3;
+	void TrySetEffect();
+	//Для запоминания ненулевых позиций в массиве указателей(для последующего рандома куба, на котором будет висеть эффект)
+	struct ValuableCoords //Можно было бы и из имеющейся структуры, но так как-то понятнее
+	{
+		int x;
+		int y;
+	};
+	TArray<ValuableCoords> ValCoords;
+	//Добавляем в массим выше координаты кубов, находящихся на поле
+	void FillValCoords();
+	//Сколько эффект будет действовать
+	int LifeTimeEffect = 10;
+	int CurrentLifeTime = 0;
+	void DecreaseLifeTime();
+	bool EffectActivated = false;
+	//Чтобы нельзя было убыстрять кубы во время дейстия ускорения/замедления
+	bool SpeedLock = false;
+	//Следит за неактивированным и активированным эффектом
+	void CheckEffect();
+
+	void ReturnToNormal();
+public:
+	void ClearEffect();
+	void ActivateEffect(RandEffects Effect);
+
+private:
+	void SpeedUpActivate();
+	void SpeedDownActivate();
+	float TempTime = 0.0f;
+
+
+	bool OnlyPalka = false;
+	void OnlyPalkaActivate();
+	
+	FString CurrentEffectString = "";
+	//Чтобы собирать строку для отправки на виджет 
+	FString BuildStringEffect();
+
+/// <summary>
+/// /////////////Меню настроек
+/// </summary>
+
+private:
+	bool RandomIsActivate = false;
+
+public:
+
+	UFUNCTION(BlueprintCallable)
+	void SetBoolRandomEffect(bool Value = false) { RandomIsActivate = Value; }
+
+	UFUNCTION(BlueprintCallable)
+	bool GetRandomBool() const { return RandomIsActivate; }
+
+	UFUNCTION(BlueprintCallable)
+	void BackToMainMenu();
+
+	
 };

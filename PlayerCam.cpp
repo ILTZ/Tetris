@@ -33,7 +33,8 @@ APlayerCam::APlayerCam()
 		(TEXT("MaterialInstanceConstant'/Game/Materials/Instances/GreenColor_Inst.GreenColor_Inst'")).Get();
 	UMaterialInstance* OrangeColor = ConstructorHelpers::FObjectFinderOptional<UMaterialInstance>
 		(TEXT("MaterialInstanceConstant'/Game/Materials/Instances/OrangeColor_Inst.OrangeColor_Inst'")).Get();
-
+	EffectInst = ConstructorHelpers::FObjectFinderOptional<UMaterialInstance>
+		(TEXT("MaterialInstanceConstant'/Game/Materials/Instances/EffectMaterial_Inst.EffectMaterial_Inst'")).Get();
 
 
 	ColorsForBlocks.Add(BlueColor);
@@ -43,7 +44,7 @@ APlayerCam::APlayerCam()
 
 
 
-
+	
 
 	GM = MENU;
 }
@@ -64,11 +65,7 @@ void APlayerCam::Tick(float DeltaTime)
 
 	if (Spawned && (GM == START_GAME))
 	{
-
-		for (int i = 0; i < CurrentFigure.Num(); ++i)
-		{
-			CurrentFigure[i]->SetActorLocation(FVector(CurrentFigureA[i].x * 100, CurrentFigureA[i].y * 100, 0.0f));
-		}
+		RendOnField();
 
 		bufferTime += DeltaTime;
 		if (bufferTime >= Time)
@@ -81,7 +78,41 @@ void APlayerCam::Tick(float DeltaTime)
 	}
 
 }
+void APlayerCam::DebugFieldRend()
+{
+	FString Count = "";
+		FString Temp = "";
+		for (int i = 0; i < FieldHight; ++i)
+		{
+			Temp = "";
+			for (int j = 0; j < FieldLength; ++j)
+			{
+				if (LogicPtrArray[j][i])
+				{
+					Count += "1 ";
+				}
+				else
+				{
+					Count += "0 ";
+				}
 
+				if (LogicArray[j][i])
+				{
+					Temp += "1 ";
+				}
+				else
+				{
+					Temp += "0 ";
+				}
+
+
+			}
+			Count += ("      " + Temp);
+			Count += '\n';
+		}
+		GEngine->AddOnScreenDebugMessage(0, 5.f, FColor::Blue, Count);
+		GEngine->AddOnScreenDebugMessage(20, 5.f, FColor::Blue, TEXT("///////////////////////////////"));
+}
 
 
 
@@ -99,6 +130,8 @@ void APlayerCam::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 	PlayerInputComponent->BindAction("DownDir", IE_Released, this, &APlayerCam::ChangeTime);
 
 	PlayerInputComponent->BindAction("Pause", IE_Pressed, this, &APlayerCam::PauseGame);
+
+	PlayerInputComponent->BindAction("RandEf", IE_Pressed, this, &APlayerCam::TrySetEffect);
 }
 
 ///////////////////////////////////////////////////////////////
@@ -106,6 +139,7 @@ void APlayerCam::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 ///////////////////////////////////////////////////////////////
 void APlayerCam::FillArrays()
 {
+
 	TArray<int> Figures;
 
 	FiguresArray.Add(Figures = { 5 ,15,25,35 }); // ѕалка вертикальна€ |
@@ -132,6 +166,8 @@ void APlayerCam::FillArrays()
 	CurrentFigureA.Init(point, 4);
 
 
+
+
 	CurrentNumberFigure = 0;
 }
 
@@ -141,7 +177,12 @@ void APlayerCam::SetOnBoard()
 	Spawned = false;
 	CurrentNumberFigure = FMath::RandRange(0, 6);
 	int n = CurrentNumberFigure;
-	int RandColor = FMath::RandRange(0, ColorsForBlocks.Num() - 1);
+	if (OnlyPalka)
+	{
+		n = 0;
+	}
+	int RandColor = FMath::RandRange(0, ColorsForBlocks.Num() - 1); 
+
 
 	for (int i = 0; i < 4; ++i)
 	{
@@ -182,6 +223,21 @@ void APlayerCam::SetOnField()
 	}
 
 	++UserScore;
+}
+void APlayerCam::RendOnField()
+{
+	for (int i = 0; i < CurrentFigure.Num(); ++i)
+	{
+		CurrentFigure[i]->SetActorLocation(FVector(CurrentFigureA[i].x * 100, CurrentFigureA[i].y * 100, 0.0f));
+	}
+}
+void APlayerCam::ClearCurrentFigure()
+{
+	for (auto cub : CurrentFigure)
+	{
+		cub->DestroyThisCub();
+	}
+	CurrentFigure.Reset(0);
 }
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
@@ -248,15 +304,32 @@ void APlayerCam::MoveDown()
 		RefreshPtrArray();
 
 		SetOnBoard();
+
+
+		if (RandomIsActivate)
+		{
+			CheckEffect();
+
+			TrySetEffect();
+		}
 	}
+
+	
+	
 }
 void APlayerCam::DownDirection()
 {
-	Time = 0.1f;
+	if (!SpeedLock)
+	{
+		Time = 0.1f;
+	}
 }
 void APlayerCam::ChangeTime()
 {
-	Time = 1.0f;
+	if (!SpeedLock)
+	{
+		Time = 1.f;
+	}
 }
 //////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////
@@ -337,7 +410,7 @@ void APlayerCam::RefreshPtrArray()
 		{
 			for (int c = 0; c < FieldLength; ++c)
 			{
-				LogicPtrArray[c][i]->Destroy();
+				LogicPtrArray[c][i]->DestroyThisCub();
 				LogicPtrArray[c][i] = nullptr;
 			}
 
@@ -397,7 +470,7 @@ void APlayerCam::PauseGame()
 }
 void APlayerCam::RestartGame()
 {
-	ClearLogicAndPtrArrays();
+	ClearLogicAndPtrArray();
 
 
 
@@ -408,7 +481,7 @@ void APlayerCam::RestartGame()
 	SetOnBoard();
 	GM = START_GAME;
 }
-void APlayerCam::ClearLogicAndPtrArrays()
+void APlayerCam::ClearLogicAndPtrArray()
 {
 	for (int i = 0; i < FieldHight; ++i)
 	{
@@ -420,9 +493,182 @@ void APlayerCam::ClearLogicAndPtrArrays()
 			}
 			if (LogicPtrArray[j][i])
 			{
+				LogicPtrArray[j][i]->ClearEffect();
 				LogicPtrArray[j][i]->Destroy();
 				LogicPtrArray[j][i] = nullptr;
 			}
 		}
 	}
+}
+/////////////////////////////////////////////////////////////////////
+//////////////            Ёффекты пол€           ////////////////////
+/////////////////////////////////////////////////////////////////////
+bool APlayerCam::TryGenEffect()
+{
+	if (!CurrentEffect && !EffectActivated)
+	{
+		const int TryResult = FMath::RandRange(1, 10);
+
+
+		return ((TryResult <= RandChance) ? true : false);
+	}
+	return false;
+}
+ACub* APlayerCam::ChouseCub()
+{
+	int RandCub = FMath::RandRange(0, ValCoords.Num() - 1);
+	if (LogicPtrArray[ValCoords[RandCub].x][ValCoords[RandCub].y])
+	{
+		return LogicPtrArray[ValCoords[RandCub].x][ValCoords[RandCub].y];
+	}
+	
+	return nullptr;
+}
+void APlayerCam::TrySetEffect()
+{
+		if (!TryGenEffect())
+		{
+			return;
+		}
+		
+		FillValCoords();
+		
+		if (ValCoords.Num() < 1)
+		{
+			return;
+		}
+
+		ACub* EffectCub = ChouseCub();
+
+		EffectCub->SetColor(EffectInst);
+		CurrentEffect = GetWorld()->SpawnActor<AEffects>();
+		EffectCub->SetEffect(CurrentEffect);
+
+
+		CurrentEffect->AttachToCub(EffectCub);
+		CurrentEffect->AttachToPlayerCam(this);
+	
+}
+void APlayerCam::FillValCoords()
+{
+	if (ValCoords.Num() >= 1)
+	{
+		ValCoords.Reset(0);
+	}
+	for (int i = 0; i < FieldLength; ++i)
+	{
+		for (int j = 0; j < FieldHight; ++j)
+		{
+			if (LogicPtrArray[i][j])
+			{
+				ValuableCoords XYvalue;
+				XYvalue.x = i;
+				XYvalue.y = j;
+				ValCoords.Add(XYvalue);
+			}
+		}
+	}
+}
+void APlayerCam::ClearEffect()
+{
+	CurrentEffect = nullptr;
+}
+void APlayerCam::SpeedUpActivate()
+{
+	
+	EffectActivated = true;
+	SpeedLock = true;
+	Time = 0.2f;
+}
+void APlayerCam::SpeedDownActivate()
+{
+	
+	EffectActivated = true;
+	SpeedLock = true;
+	Time = 1.5f;
+}
+void APlayerCam::DecreaseLifeTime()
+{
+	--CurrentLifeTime;
+}
+void APlayerCam::CheckEffect()
+{
+	if (CurrentEffect)
+	{
+		CurrentEffect->DecreaseLifeTime();
+	}
+
+	if (EffectActivated)
+	{
+		DecreaseLifeTime();
+		if (CurrentLifeTime < 1)
+		{
+
+			ReturnToNormal();
+			
+			GEngine->AddOnScreenDebugMessage(11, 5.f, FColor::Green, "Effect GoOn!");
+		}
+
+	}
+}
+void APlayerCam::ReturnToNormal()
+{
+	EffectActivated = false;
+	SpeedLock = false;
+	Time = 1.f;
+	OnlyPalka = false;
+
+	
+}
+void APlayerCam::ActivateEffect(RandEffects Effect)
+{
+	CurrentLifeTime = LifeTimeEffect;
+	switch (Effect)
+	{
+	case TIME_SPEEDUP:
+		SpeedUpActivate();
+		CurrentEffectString = "SpeedUp " ;
+		break; 
+
+	case TIME_SLOWDOWN:
+		SpeedDownActivate();
+		CurrentEffectString = "SlowDown ";
+		break;
+
+	case ONLY_PALKA:
+		OnlyPalkaActivate();
+		CurrentEffectString = "OnlyPalka ";
+		break;
+
+
+	default:
+		GEngine->AddOnScreenDebugMessage(5, 5.f, FColor::Red, "Effect isn't found!!!");
+	}
+}
+void APlayerCam::OnlyPalkaActivate()
+{	
+	OnlyPalka = true;
+	EffectActivated = true;
+}
+FString APlayerCam::BuildStringEffect()
+{
+	FString OutString = CurrentEffectString + FString::FromInt(CurrentLifeTime) + " steps\nremaning";
+	return OutString;
+}
+void APlayerCam::BackToMainMenu()
+{
+	ClearCurrentFigure();
+	ClearCurrentEffect();
+	ClearLogicAndPtrArray();
+	UserScore = 0;
+	GM = MENU;
+}
+void APlayerCam::ClearCurrentEffect()
+{
+	if (CurrentEffect)
+	{
+		CurrentEffect->Destroy();
+		CurrentEffect = nullptr;
+	}
+	ReturnToNormal();
 }
