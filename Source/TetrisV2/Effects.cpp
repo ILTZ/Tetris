@@ -38,7 +38,6 @@ void AEffects::Tick(float DeltaTime)
 void AEffects::DecreaseLifeTime()
 {
 	--LifeTime;
-	GEngine->AddOnScreenDebugMessage(20, 10.f, FColor::Blue, FString::FromInt(LifeTime) + " step remaning.");
 	if (IsLife())
 	{
 		KillHimSelf();

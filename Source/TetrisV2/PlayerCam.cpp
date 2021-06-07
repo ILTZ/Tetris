@@ -231,6 +231,14 @@ void APlayerCam::RendOnField()
 		CurrentFigure[i]->SetActorLocation(FVector(CurrentFigureA[i].x * 100, CurrentFigureA[i].y * 100, 0.0f));
 	}
 }
+void APlayerCam::ClearCurrentFigure()
+{
+	for (auto cub : CurrentFigure)
+	{
+		cub->DestroyThisCub();
+	}
+	CurrentFigure.Reset(0);
+}
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
@@ -297,9 +305,13 @@ void APlayerCam::MoveDown()
 
 		SetOnBoard();
 
-		CheckEffect();
 
-		TrySetEffect();
+		if (RandomIsActivate)
+		{
+			CheckEffect();
+
+			TrySetEffect();
+		}
 	}
 
 	
@@ -481,6 +493,7 @@ void APlayerCam::ClearLogicAndPtrArray()
 			}
 			if (LogicPtrArray[j][i])
 			{
+				LogicPtrArray[j][i]->ClearEffect();
 				LogicPtrArray[j][i]->Destroy();
 				LogicPtrArray[j][i] = nullptr;
 			}
@@ -642,11 +655,20 @@ FString APlayerCam::BuildStringEffect()
 	FString OutString = CurrentEffectString + FString::FromInt(CurrentLifeTime) + " steps\nremaning";
 	return OutString;
 }
-/////////////////////////////////////////////////////////////////////
-////////////////////Работа с настройками/////////////////////////////
-/////////////////////////////////////////////////////////////////////
-void APlayerCam::SetSettings(int ILifeTimeEffect, int IRandChance)
+void APlayerCam::BackToMainMenu()
 {
-	RandChance = IRandChance;
-	LifeTimeEffect = ILifeTimeEffect;
+	ClearCurrentFigure();
+	ClearCurrentEffect();
+	ClearLogicAndPtrArray();
+	UserScore = 0;
+	GM = MENU;
+}
+void APlayerCam::ClearCurrentEffect()
+{
+	if (CurrentEffect)
+	{
+		CurrentEffect->Destroy();
+		CurrentEffect = nullptr;
+	}
+	ReturnToNormal();
 }

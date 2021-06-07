@@ -21,7 +21,7 @@ enum GameMode
 	START_GAME	= 1		UMETA(DisplayName = "StartGame"),
 	PAUSE		= 2		UMETA(DisplayName = "Pause"),
 	END_GAME	= 3		UMETA(DisplayName = "EndGame"),
-	SETTINGS	= 4		UMETA(DisplayName = "Settings"),
+
 };
 
 
@@ -124,7 +124,7 @@ private:
 
 	//Хранит текущую фигуру
 	TArray<ACub*> CurrentFigure;
-
+	void ClearCurrentFigure();
 
 
 	//Синхронно с логическим массивом хранит указатели на кубы(для уничтожения
@@ -191,6 +191,7 @@ public:
 /////////////////////////Рандомно генерящиеся эффекты
 private:
 	AEffects* CurrentEffect = nullptr;
+	void ClearCurrentEffect();
 	UMaterialInstance* EffectInst = nullptr;
 	//Возбращает правду, если число (0-10) <= "RandChance"
 	bool TryGenEffect();
@@ -240,16 +241,18 @@ private:
 /// </summary>
 
 private:
-	
+	bool RandomIsActivate = false;
 
 public:
 
 	UFUNCTION(BlueprintCallable)
-	void SwitchOnSettings() { GM = SETTINGS; }
+	void SetBoolRandomEffect(bool Value = false) { RandomIsActivate = Value; }
 
 	UFUNCTION(BlueprintCallable)
-	void SwitchOnMainMenu() { GM = MENU; }
+	bool GetRandomBool() const { return RandomIsActivate; }
 
 	UFUNCTION(BlueprintCallable)
-	void SetSettings(int ILifeTimeEffect, int IRandChance);
+	void BackToMainMenu();
+
+	
 };
